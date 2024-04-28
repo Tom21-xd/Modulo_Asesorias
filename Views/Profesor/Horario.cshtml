@@ -1,0 +1,47 @@
+﻿@model IEnumerable<Modulo_Asesorias.Models.Agendum>;
+@{
+    var dia = DateTime.Now;
+    ViewData["Title"] = "Reservar";
+    Layout = "~/Views/Shared/Layout_profesor.cshtml";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>verHorario</title>
+</head>
+<body>
+    <div>
+        <h1 class="mb-5 mt-5 text-center">Mi Horario</h1>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle text-center table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">Dia</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Hora Inicio</th>
+                        <th scope="col">Hora Fin</th>
+                        <th scope="col">Estudiante</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Agendum a in Model)
+                    {
+                        <tr>   
+                            <td>@a.DiaAgenda</td>
+                            <td>@a.FechaAgenda</td>
+                            <td>@a.HorainicioAgenda</td>
+                            <td>@a.HorafinAgenda</td>
+                            <td>@((a.FkIdEstudiante == null) ? "Libre" : a.FkIdEstudianteNavigation.FkIdPersonaNavigation.Nombre1Persona + " " + a.FkIdEstudianteNavigation.FkIdPersonaNavigation.Apellido1Persona)</td>
+                        </tr>
+                    }
+                    
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,253 @@
+﻿@model IEnumerable<Modulo_Asesorias.Models.Usuario>;
+@using System.Security.Claims;
+
+@{
+    ViewData["Title"] = "Reservar";
+    Layout = "~/Views/Shared/Layout_estudiante.cshtml";
+
+    var id = User.FindFirstValue(ClaimTypes.Actor);
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.3/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+</head>
+<body>
+
+    <style>
+        .flatpickr-calendar {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+    </style>
+
+    <div class="container">
+        <form method="post" action="">
+
+            <div class="row">
+                <div class="col">
+                    <input class="form-control" placeholder="Docente" name="docente"></input>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+                </div>
+            </div>
+
+        </form>
+
+        <div class="row row-cols-auto " style="justify-content:center;">
+
+            @foreach (Usuario p in Model)
+            {
+                <div class="col mt-5">
+                    <div class="card text-center border-success" style="width: 15rem; height:15rem;">
+                        <div class="card-header">
+                            <h5 class="card-title">@p.FkIdPersonaNavigation.Nombre1Persona @p.FkIdPersonaNavigation.Apellido1Persona</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Docente de : </p>
+                            @foreach (Impartir o in p.Impartirs)
+                            {
+                                @o.FkIdAsignaturaNavigation.NombreAsignatura
+
+                                <br>
+                            }
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#Agendar" id="@p.IdUsuario">
+                                Mas Info
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+
+        <div class="modal fade" id="Agendar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Horario</h1>
+                        <button type="button" class="btn-close cer" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p hidden id="valoc">@id</p>
+                        <div id="divFecha" class="text-center calendario-container mt-5" style="display: none;">
+                            <div id="calendario" class="calendario">
+                            </div>
+                        </div>
+
+                        <div id="divHora" class="text-center mt-5" style="display: block;">
+                            <h2 class="mb-5" style="margin-left:10px; color:#255000;">Hora</h2>
+                            <div id="divH"></div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary cer " data-bs-dismiss="modal" >Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <img src="~/img/uniamazonia.png" style="width:50px; height:30px; " class="rounded me-2" alt="...">
+                <strong class="me-auto">UDLA</strong>
+                <small>Ahora</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                La Reserva se ha realizado
+            </div>
+        </div>
+    </div>
+
+</body>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.3/dist/flatpickr.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    var idEstu = document.getElementById('valoc').textContent;
+    var idprofesor = 0;
+    var p = false;
+    const divH = document.getElementById('divH');
+    const divFecha = document.getElementById('divFecha');
+
+    const buttons = document.querySelectorAll('.btn-outline-success'); // Selecciona todos los botones con la clase 'btn-outline-success'
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function () {
+            id = this.getAttribute('id');
+            document.getElementById('divFecha').style.display = 'block';
+            idprofesor = id;
+            obtenerFechas(id);
+        });
+    });
+
+    var botoncerrar = document.querySelector('.cer');
+
+    botoncerrar.addEventListener('click', function () {
+        divH.innerHTML = '';
+    });
+
+
+    function obtenerFechas(id_profesor) {
+        $.ajax({
+            url: "@Url.Action("obtenerFechas", "Estudiante")",
+            type: "POST",
+            traditional: true,
+            data: { id_profesor: id_profesor },
+            success: function (result) {
+                fechasHorasDisponibles = result;
+                habilitarCalendario(fechasHorasDisponibles);
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+
+    function habilitarCalendario(fechasDisponibles) {
+        flatpickr("#calendario", {
+            inline: true,
+            dateFormat: "d/m/Y",
+            onChange: mostrarHoras,
+            minDate: "today",
+            theme: "dark",
+            disable: [
+                {
+                    from: "01/01/1999",
+                    to: "01/01/2999",
+                },
+            ],
+            enable: fechasDisponibles,
+        });
+    }
+
+    function mostrarHoras(selectedDates, dateStr, instance) {
+        let fechaSeleccionada = dateStr;
+        obtenerHoras(fechaSeleccionada);
+    }
+
+    function obtenerHoras(fecha) {
+        $.ajax({
+            url: "@Url.Action("obtenerHoras", "Estudiante")",
+            type: "POST",
+            traditional: true,
+            data: { fecha: fecha, idprofesor: idprofesor },
+            success: function (result) {
+                Horasdis = result;
+                console.log(Horasdis);
+                document.getElementById('divHora').style.display = 'block';
+                p = true;
+                crearHoras(fecha, Horasdis);
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+
+    function crearHoras(fecha, Horasdis) {
+        if (p) {
+            divH.innerHTML = '';
+            for (let i = 0; i < Horasdis.length; i++) {
+                const divRow = document.createElement('div');
+                divRow.classList.add('row');
+                for (let j = 0; j < 3 && i < Horasdis.length; j++, i++) {
+                    const divCol = document.createElement('div');
+                    divCol.classList.add('col');
+                    const nuevoBoton = document.createElement('button');
+                    nuevoBoton.classList.add('btn', 'btn-outline-light', 'mt-3','cer');
+                    nuevoBoton.textContent = Horasdis[i].horainicioAgenda;
+                    nuevoBoton.setAttribute("data-bs-dismiss","modal");
+                    nuevoBoton.onclick = (function (index) {
+                        return function () {
+                            agendar(Horasdis[index].idAgenda)
+                        };
+                    })(i);
+                    divCol.appendChild(nuevoBoton);
+                    divRow.appendChild(divCol);
+                }
+                i--;
+                divH.appendChild(divRow);
+            }
+        }
+    }
+
+
+    function agendar(ida) {
+        $.ajax({
+            url: "@Url.Action("crearReserva", "Estudiante")",
+            type: "POST",
+            traditional: true,
+            data: { ida: ida },
+            success: function (result) {
+                var toastLiveExample = document.getElementById('liveToast');
+                var toastBootstrap = new bootstrap.Toast(toastLiveExample);
+                toastBootstrap.show();
+            },
+            error: function (xhr, status, error) {
+                console.log("error");
+                console.error(error);
+            }
+        });
+    }
+
+</script>
+
+
+</html>
+
+

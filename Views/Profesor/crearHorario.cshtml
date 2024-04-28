@@ -1,0 +1,148 @@
+﻿@{
+    ViewData["Title"] = "Reservar";
+    Layout = "~/Views/Shared/Layout_profesor.cshtml";
+
+}
+
+
+<h1>Crear </h1>
+<form action="@Url.Action("crear","Profesor")" method="post" class="mt-5">
+    <div>
+        <div class="row mt-3">
+            <div class="col">
+                <label class="form-label">Fecha Inicio</label>
+                <input class="form-control" type="date" required name="fechaInicio">
+            </div>
+
+            <div class="col">
+                <label class="form-label">Fecha Fin</label>
+                <input class="form-control" type="date" required name="fechaFin">
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-5 mb-5">
+        <div class="col text-center m-3">
+            <label class="form-label">L</label>
+            <input class="form-check-input" type="checkbox" value="L" id="dias" name="L" onchange="aniadir(event)">
+        </div>
+        <div class="col text-center m-3">
+            <label class="form-label">M</label>
+            <input class="form-check-input" type="checkbox" value="M" id="dias" name="M" onchange="aniadir(event)">
+        </div>
+        <div class="col text-center m-3">
+            <label class="form-label">X</label>
+            <input class="form-check-input" type="checkbox" value="X" id="dias" name="X" onchange="aniadir(event)">
+        </div>
+        <div class="col text-center m-3">
+            <label class="form-label">J</label>
+            <input class="form-check-input" type="checkbox" value="J" id="dias" name="J" onchange="aniadir(event)">
+        </div>
+        <div class="col text-center m-3">
+            <label class="form-label">V</label>
+            <input class="form-check-input" type="checkbox" value="V" id="dias" name="V" onchange="aniadir(event)">
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">Guardar</button>
+    </div>
+</form>
+
+<script>
+
+
+    function creardiv(tipo, cr) {
+        var div = document.createElement("div");
+        div.classList.add(tipo);
+        div.classList.add("mt-3");
+        return div;
+    }
+
+    function crearInput(tipo, id, c) {
+        var input = document.createElement("input");
+        input.type = tipo;
+        input.classList.add("form-control");
+        input.classList.add("col");
+        input.required = true;
+        input.name = c + "_input" + id;
+        return input;
+    }
+
+    function crearSelect(c, id) {
+        var select = document.createElement("select");
+        select.classList.add("form-select");
+        select.classList.add("col-auto");
+        select.classList.add("ms-1");
+        select.style.width = "auto";
+        select.name = c + "_select" + id;
+        select.add(new Option("1 hr"));
+        select.add(new Option("2 hr"));
+        select.add(new Option("3 hr"));
+        select.add(new Option("4 hr"));
+        return select;
+    }
+
+    function crearBoton() {
+        var buton = document.createElement("button");
+        buton.type = "button";
+        buton.classList.add("btn");
+        buton.classList.add("btn-primary");
+        buton.classList.add("col-auto");
+        buton.classList.add("ms-1");
+        buton.innerHTML = "+";
+        return buton;
+    }
+
+
+    function crearComponentes(checkbox, container, cont) {
+
+        var boton = crearBoton();
+
+        var div = creardiv("row");
+
+        div.appendChild(crearInput("time", cont, checkbox.name));
+        div.appendChild(crearSelect(checkbox.name, cont));
+        div.appendChild(boton);
+
+        container.appendChild(div);
+
+        boton.addEventListener("click", function () {
+
+            cont++;
+
+            var aux = creardiv("row");
+
+            aux.appendChild(crearInput("time", cont, checkbox.name));
+            aux.appendChild(crearSelect(checkbox.name, cont));
+
+            container.appendChild(aux);
+
+        });
+
+
+    }
+
+    function aniadir(event) {
+
+
+        var checkbox = event.target;
+        var container = checkbox.parentElement;
+
+        if (checkbox.checked) {
+
+            crearComponentes(checkbox, container, 0);
+
+
+        } else {
+            while (container.querySelector(".row")) {
+                var divToRemove = container.querySelector(".row");
+                container.removeChild(divToRemove);
+            }
+        }
+
+
+
+    }
+</script>
